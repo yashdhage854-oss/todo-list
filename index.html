@@ -1,1 +1,77 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#e8f7f4">
+<title>TO DO LIST</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f2f8f7;color:#193b38;font-family:Arial,sans-serif}
+.app{max-width:650px;margin:auto;padding:22px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{color:#087f73;font-size:27px}
+.card{background:white;border-radius:18px;padding:18px;margin:18px 0;box-shadow:0 3px 15px #153b3810}
+.progress{display:flex;justify-content:space-between;align-items:center;gap:12px}
+#percentage{font-size:25px;color:#087f73;font-weight:bold}
+form{display:grid;gap:10px}
+input,select,button{font:inherit;padding:13px;border-radius:10px;border:1px solid #d6e6e2;width:100%}
+button{background:#087f73;color:white;border:0;font-weight:bold;cursor:pointer}
+ul{padding:0;list-style:none}
+li{display:flex;align-items:center;gap:10px;background:white;padding:14px;margin:10px 0;border-radius:12px;overflow-wrap:anywhere}
+li input{width:20px;height:20px;flex-shrink:0}
+.task-text{flex:1}
+.done{text-decoration:line-through;color:#84938f}
+.delete{width:auto;background:#fbe9e7;color:#9f3028;padding:9px}
+small{color:#687f7a}
+</style>
+</head>
+<body>
+<main class="app">
+<header><h1>✓ TO DO LIST</h1><span>☀️</span></header>
+<p>Let's make today productive.</p>
+<section class="card progress">
+<div><strong>Today's progress</strong><p id="progress">0 of 0 tasks completed</p></div>
+<span id="percentage">0%</span>
+</section>
+<section class="card">
+<form id="task-form">
+<label for="task-input">What do you need to do?</label>
+<input id="task-input" placeholder="Enter a new task..." required>
+<label for="category">Category</label>
+<select id="category"><option>Study</option><option>Personal</option><option>Work</option></select>
+<button type="submit">+ Add task</button>
+</form>
+</section>
+<h2>My tasks</h2>
+<ul id="task-list"></ul>
+<small>Your tasks are saved in this browser on this device.</small>
+</main>
+<script>
+const form=document.getElementById('task-form');
+const input=document.getElementById('task-input');
+const category=document.getElementById('category');
+const list=document.getElementById('task-list');
+let tasks=[];
+try{tasks=JSON.parse(localStorage.getItem('todo-list-tasks')||'[]')}catch(e){tasks=[]}
+function save(){try{localStorage.setItem('todo-list-tasks',JSON.stringify(tasks))}catch(e){}}
+function render(){
+list.replaceChildren();
+tasks.forEach(task=>{
+const li=document.createElement('li');
+const check=document.createElement('input');check.type='checkbox';check.checked=task.done;check.setAttribute('aria-label','Complete task');
+check.addEventListener('change',()=>{task.done=check.checked;save();render()});
+const title=document.createElement('span');title.className='task-text'+(task.done?' done':'');title.textContent=task.title;
+const tag=document.createElement('small');tag.textContent=task.category;
+const del=document.createElement('button');del.className='delete';del.textContent='Delete';del.addEventListener('click',()=>{tasks=tasks.filter(t=>t.id!==task.id);save();render()});
+li.append(check,title,tag,del);list.append(li);
+});
+const completed=tasks.filter(t=>t.done).length;
+document.getElementById('progress').textContent=completed+' of '+tasks.length+' tasks completed';
+document.getElementById('percentage').textContent=(tasks.length?Math.round(completed/tasks.length*100):0)+'%';
+}
+form.addEventListener('submit',e=>{e.preventDefault();const title=input.value.trim();if(!title)return;tasks.push({id:Date.now(),title,category:category.value,done:false});save();render();input.value='';input.focus()});
+render();
+</script>
+</body>
+</html>
